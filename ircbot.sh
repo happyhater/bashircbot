@@ -99,19 +99,19 @@ while getopts ":s:p:m:l:b:" flag
 	do
 		case $flag in
 			s)
-				flagy=True
+				ignore=True
 				servername=${OPTARG}
 			;;
 			p)
-				flagy=True
+				ignore=True
 				port=${OPTARG}
 			;;
 			b)
-				flagy=True
+				ignore=True
 				proxy=${OPTARG}
 			;;
 			m)
-				flagy=True
+				ignore=True
 				string=${OPTARG}
 				cat channelname|grep 322| cut -d\  -f2-|awk '{print $3}' > channeltemp
 				channelname=$(awk NR==$((${RANDOM} % `wc -l < channeltemp` + 1)) channeltemp)
@@ -128,7 +128,7 @@ while getopts ":s:p:m:l:b:" flag
 				cat <&3
 			;;
 			l)
-				flagy=True
+				ignore=True
 				echo $servername
 				exec 3<>/dev/tcp/$servername/$port > channelname
 				nickname "${names[$((RANDOM%num_names))]}" >&3
@@ -143,7 +143,7 @@ while getopts ":s:p:m:l:b:" flag
 		esac
 	done
 
-	if [ -z "$flagy" ]
+	if [ -z "$ignore" ]
 	then
 		usage
 	fi
