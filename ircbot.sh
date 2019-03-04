@@ -28,7 +28,6 @@ function join {
 # stdin: a stream where each line is converted to a message
 # $1: The user/channel to send to
 function msg {
-	#echo "PRIVMSG ${1} :${2}" >&3
 	TARGET=$1
 	sed -re "s/^(.*)\$/PRIVMSG ${TARGET} :\1/"
 }
@@ -96,7 +95,7 @@ Matilda
 names=($namelist)
 num_names=${#names[*]}
 
-while getopts ":s:p:m:l:" flag
+while getopts ":s:p:m:l:b:" flag
 	do
 		case $flag in
 			s)
@@ -107,6 +106,10 @@ while getopts ":s:p:m:l:" flag
 				flagy=True
 				port=${OPTARG}
 			;;
+			b)
+				flagy=True
+				proxy=${OPTARG}
+			;;
 			m)
 				flagy=True
 				string=${OPTARG}
@@ -114,9 +117,9 @@ while getopts ":s:p:m:l:" flag
 				channelname=$(awk NR==$((${RANDOM} % `wc -l < channeltemp` + 1)) channeltemp)
 				rm -rf channeltemp
 				# with proxy;
-				# exec 3<>/dev/tcp/$1/$2
-				# echo "CONNECT wh.irc.net:6667" >&3
-				exec 3>/dev/tcp/$servername/$port
+				# exec 3<>/dev/tcp/$proxy
+				# echo "CONNECT $servername:$port" >&3
+				exec 3<>/dev/tcp/$servername/$port
 				nickname "${names[$((RANDOM%num_names))]}" >&3
 				username "${names[$((RANDOM%num_names))]} ${names[$((RANDOM%num_names))]}" >&3
 				join $channelname >&3
@@ -127,7 +130,7 @@ while getopts ":s:p:m:l:" flag
 			l)
 				flagy=True
 				echo $servername
-				exec 3>/dev/tcp/$servername/$port > channelname
+				exec 3<>/dev/tcp/$servername/$port > channelname
 				nickname "${names[$((RANDOM%num_names))]}" >&3
 				username "${names[$((RANDOM%num_names))]} ${names[$((RANDOM%num_names))]}" >&3
 				list >&3
