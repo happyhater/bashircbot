@@ -108,28 +108,32 @@ while getopts ":s:p:m:l:b:" flag
 			;;
 			b)
 				ignore=True
-				proxy=${OPTARG}
+				proxy0=${OPTARG}
+				proxy=$(echo ${OPTARG}|sed "s/:/\//")
 			;;
 			m)
 				ignore=True
 				string=${OPTARG}
 				cat channelname|grep 322| cut -d\  -f2-|awk '{print $3}' > channeltemp
 				channelname=$(awk NR==$((${RANDOM} % `wc -l < channeltemp` + 1)) channeltemp)
-				rm -rf channeltemp
-				# with proxy;
-				# exec 3<>/dev/tcp/$proxy
-				# echo "CONNECT $servername:$port" >&3
-				exec 3<>/dev/tcp/$servername/$port
+				if [ -z "$proxy" ]
+				then
+					# without proxy;
+					exec 3<>/dev/tcp/$servername/$port
+				else
+					# with proxy;
+					exec 3<>/dev/tcp/$proxy
+					echo "CONNECT $servername:$port" >&3
+				fi
 				nickname "${names[$((RANDOM%num_names))]}" >&3
 				username "${names[$((RANDOM%num_names))]} ${names[$((RANDOM%num_names))]}" >&3
 				join $channelname >&3
-				echo "$*"|sed "s/-s $servername -p $port -m //"|msg $channelname >&3
+				echo "$*"|sed "s/-s $servername //"|sed "s/-p $port //"|sed "s/-b $proxy0 //"|sed "s/-m //"|msg $channelname >&3
 				quit >&3
 				cat <&3
 			;;
 			l)
 				ignore=True
-				echo $servername
 				exec 3<>/dev/tcp/$servername/$port > channelname
 				nickname "${names[$((RANDOM%num_names))]}" >&3
 				username "${names[$((RANDOM%num_names))]} ${names[$((RANDOM%num_names))]}" >&3
